@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.open.job.IDAO.SearchDAO">
+	<select id="getAllPostList" resultType="com.open.job.DTO.Post">
+		SELECT * FROM Post
+		Inner
+		Join Companyimg Using(companyNo)
+		Inner join Company using(companyNo)
+	</select>
+	<select id="getSearchPostList" resultType="com.open.job.DTO.Post"
+		parameterType="Map">
+		SELECT * FROM Post
+		Inner Join Companyimg Using(companyNo)
+		Inner join Company using(companyNo)
+		Inner join CompanyInfo using(companyNo)
+		<where>
+			<choose>
+				<when test='category neq "company"'>
+					title LIKE '%${searchWord}%' or companyname LIKE
+					'%${searchWord}%'
+				</when>
+			</choose>
+		</where>
+	</select>
+	<select id="getSearchCompanyList" resultType="com.open.job.DTO.Company"
+		parameterType="Map">
+		SELECT * FROM Company
+		Inner Join Companyimg Using(companyNo)
+		<where>
+			<choose>
+				<when test='category neq "post"'>
+					companyname LIKE '%${searchWord}%'
+				</when>
+			</choose>
+		</where>
+	</select>
+	<select id="getType" resultType="com.open.job.DTO.Type">
+		SELECT * FROM Type
+	</select>
+	<select id="getLocation" resultType="com.open.job.DTO.Location">
+		SELECT * FROM Location
+		WHERE
+		sublocation IS null order by locationno
+	</select>
+	<select id="getSubLocation" resultType="com.open.job.DTO.Location">
+		SELECT * FROM Location
+		WHERE sublocation IS not null order by locationno
+	</select>
+	<select id="getjobcategory" resultType="com.open.job.DTO.Jobcategory">
+		SELECT * FROM Jobcategory
+		WHERE subjobcategory IS null order by jobcategoryno
+	</select>
+	<select id="getSubjobcategory" resultType="com.open.job.DTO.Jobcategory">
+		SELECT * FROM
+		Jobcategory
+		WHERE subjobcategory IS not null order by jobcategoryno
+	</select>
+	<select id="getDday" resultType="com.open.job.DTO.Dday">
+		SELECT * FROM Dday
+	</select>
+	<select id="getQuickCompSearch" parameterType="String"
+		resultType="com.open.job.DTO.Company">
+		SELECT companyNo, companyName FROM Company
+		WHERE companyName
+		LIKE CONCAT('%',#{searchword},'%')
+	</select>
+	<select id="getResult" parameterType="Map" resultType="com.open.job.DTO.Post">
+		SELECT * FROM Post
+		Inner join Companyimg using(companyNo)
+		Inner join Company using(companyNo)
+		Inner join CompanyInfo using(companyNo)
+		<where>
+		<if test="loca!=null">
+		location REGEXP
+		<foreach item="item" collection="loca" open="'" separator="|" close="'">${item}</foreach>
+		</if>
+		<if test="job!=null">
+		AND subjobcategory REGEXP
+		<foreach item="item" collection="job" open="'" separator="|" close="'">${item}</foreach>
+		</if>
+		<if test="care!=null">
+		AND career in
+		<foreach item="item" collection="care" open="(" separator="," close=")">#{item}</foreach> 
+		</if>
+		<if test="type!=null">
+		AND type in
+		<foreach item="item" collection="type" open="(" separator="," close=")">#{item}</foreach> 
+		</if>
+		<if test="dday!=null">
+		AND writeDate > date_sub(now(), interval 
+		<foreach item="item" collection="dday" open="(" separator="," close=")">#{item}</foreach> day)
+		</if>
+		</where>
+	</select>
+</mapper>

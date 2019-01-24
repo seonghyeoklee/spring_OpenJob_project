@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.open.job.IDAO.CompanyDAO">
+	<select id="getCompanyInfo" parameterType="Integer"
+		resultType="com.open.job.DTO.sub.CompanyInfo">
+		Select * From CompanyInfo
+		Inner Join Company Using(companyNo)
+		Where companyNo = #{companyno}
+	</select>
+	<select id="getCompanyBase" parameterType="Integer"
+		resultType="com.open.job.DTO.Company">
+		Select * From Company
+		Inner Join Companyimg Using(companyNo)
+		Where companyNo = #{companyno}
+	</select>
+	<select id="getJobcategory" resultType="com.open.job.DTO.Jobcategory">
+		Select * From Jobcategory
+		Where subjobcategory IS null
+	</select>
+	<select id="getSubjobcategory" parameterType="Integer"
+		resultType="com.open.job.DTO.Jobcategory">
+		Select * From Jobcategory
+		Where jobcategoryNo &gt;
+		#{jobcategoryno} AND jobcategoryNo &lt;
+		#{jobcategoryno} + 100
+	</select>
+	<select id="getLocation" resultType="com.open.job.DTO.Location">
+		Select * From Location
+		Where
+		sublocation IS null
+	</select>
+	<select id="getSublocation" parameterType="Integer" resultType="com.open.job.DTO.Location">
+		Select * From Location
+		Where locationNo &gt;=
+		#{locationno} AND locationNo &lt;
+		#{locationno} + 100
+	</select>
+	<select id="getEmploytype" resultType="com.open.job.DTO.Employtype">
+		Select * From Employtype
+	</select>
+	<insert id="insertPost" parameterType="com.open.job.DTO.Post">
+		INSERT INTO Post
+		(companyNo,
+		companyIntro,
+		mainduty,
+		requirement,
+		process,
+		personcharged,
+		emailcharged,
+		phonecharged,
+		jobcategory,
+		subjobcategory,
+		employtype,
+		location,
+		educationrecord,
+		salary,
+		position,
+		duty,
+		career,
+		endDate,
+		startDate,
+		writeDate,
+		title)
+		VALUES
+		(#{companyno},
+		#{companyintro},
+		#{mainduty},
+		#{requirement},
+		#{process},
+		#{personcharged},
+		#{emailcharged},
+		#{phonecharged},
+		#{jobcategory},
+		#{subjobcategory},
+		#{employtype},
+		#{location},
+		#{educationrecord},
+		#{salary},
+		#{position},
+		#{duty},
+		#{career},
+		#{enddate},
+		#{startdate},
+		NOW(),
+		#{title});
+	</insert>
+	<select id="getPost" parameterType="com.open.job.DTO.Post" resultType="com.open.job.DTO.Post">
+		SELECT * FROM Post
+		WHERE companyNo = #{companyno}
+		<if test="jobcategory != null and jobcategory !='null'">
+			AND jobcategory = #{jobcategory}
+		</if>
+		<if test="subjobcategory != null and subjobcategory !='null'">
+			AND subjobcategory = #{subjobcategory}
+		</if>
+		<if test="career != null and career !='null'">
+			AND career = #{career}
+		</if>
+		<if test="location != null and location !='null'">
+			AND location LIKE CONCAT(#{location},'%')
+		</if>		
+		<if test="title == null or title =='null'">
+			AND enddate &gt; NOW()
+		</if>	
+	</select>
+	<insert id="insertCompanyReviewInfo" parameterType="com.open.job.DTO.CompanyReview">
+		<selectKey keyProperty="companyreviewno" resultType="Integer"
+			order="BEFORE">
+			SELECT IFNULL(MAX(companyreviewNo),0)+1 as companyreviewNo FROM CompanyReviewInfo
+		</selectKey>
+		INSERT INTO CompanyReviewInfo
+		(companyreviewNo,
+		companyNo,
+		memberNo,
+		writeDate,
+		employstatus,
+		jobcategory,
+		subjobcategory,
+		employtype,
+		location)
+		VALUES
+		(#{companyreviewno},
+		#{companyno},
+		#{memberno},
+		NOW(),
+		#{employstatus},
+		#{jobcategory},
+		#{subjobcategory},
+		#{employtype},
+		#{location});
+	</insert>
+	<insert id="insertCompanyReview" parameterType="com.open.job.DTO.CompanyReview">
+		INSERT INTO CompanyReview
+    (companyreviewNo,
+    summary, 
+    positive, 
+    negative, 
+    wishlist, 
+    totalScore, 
+    promotionScore, 
+    walfareScore, 
+    balanceScore, 
+    atmosphereScore, 
+    executiveScore, 
+    CEOScore, 
+    recommandScore, 
+    futureScore)
+VALUES
+    (
+    #{companyreviewno},
+    #{summary},
+    #{positive}, 
+    #{negative}, 
+    #{wishlist}, 
+    #{totalscore}, 
+    #{promotionscore}, 
+    #{walfarescore}, 
+    #{balancescore}, 
+    #{atmospherescore}, 
+    #{executivescore}, 
+    #{ceoscore}, 
+    #{recommandscore}, 
+    #{futurescore});
+	</insert>
+	<select id="getCompanyReview" parameterType="com.open.job.DTO.CompanyReview" resultType="com.open.job.DTO.CompanyReview">
+		SELECT * FROM CompanyReviewInfo
+		INNER JOIN CompanyReview USING(companyreviewNo)
+		<where>
+		companyNo = #{companyno}
+		<if test="jobcategory!=null and jobcategory!='null'">
+			AND jobcategory = #{jobcategory}
+		</if>
+		<if test="employstatus!=null and employstatus!='null'">
+			AND	 <if test="employstatus=='false'">NOT</if> employstatus = 'true'	
+		</if>
+		</where>
+	</select>
+	<select id="getCompanyInterview" parameterType="com.open.job.DTO.InterviewReview" resultType="com.open.job.DTO.InterviewReview">
+	 SELECT * FROM InterviewReviewInfo
+	 INNER JOIN InterviewReview USING(interviewNo)
+	 <where>
+	 companyNo = #{companyno}
+	 <if test="jobcategory!=null and jobcategory!='null'">
+			AND jobcategory = #{jobcategory}
+		</if>
+		<if test="position!=null and position!='null'">
+			AND	 position = #{position}	
+		</if>
+		<if test="successed!=null and successed!='null'">
+			AND	 successed = #{successed}	
+		</if>
+	 </where>
+	</select>
+	<insert id="insertInterviewReviewInfo" parameterType="com.open.job.DTO.InterviewReview">
+		<selectKey keyProperty="interviewno" resultType="Integer"
+			order="BEFORE">
+			SELECT IFNULL(MAX(interviewNo),0)+1 as interviewNo FROM InterviewReviewInfo
+		</selectKey>
+		INSERT INTO InterviewReviewInfo
+    (interviewNo,
+    companyNo, 
+    memberNo, 
+    writeDate, 
+    career, 
+    position, 
+    jobcategory, 
+    subjobcategory, 
+    employtype, 
+    location)
+VALUES
+    (#{interviewno},
+    #{companyno}, 
+    #{memberno}, 
+    NOW(), 
+    #{career}, 
+    #{position}, 
+    #{jobcategory}, 
+    #{subjobcategory},
+    #{employtype}, 
+    #{location});
+	</insert>
+	<insert id="insertInterviewReview" parameterType="com.open.job.DTO.InterviewReview">
+	INSERT INTO InterviewReview
+    (interviewNo,
+    interviewProcess, 
+    interviewQuestion, 
+    interviewAnswer, 
+    salaryProcess, 
+    experience, 
+    interviewLevel, 
+    successed, 
+    interviewRoot)
+VALUES
+    (#{interviewno},
+    #{interviewprocess}, 
+    #{interviewquestion}, 
+    #{interviewanswer}, 
+    #{salaryprocess}, 
+    #{experience}, 
+    #{interviewlevel}, 
+    #{successed}, 
+    #{interviewroot});
+	</insert>
+	<select id="getSinglePost" parameterType="Integer" resultType="com.open.job.DTO.Post">
+	SELECT * FROM Post
+	WHERE postNo = #{postno} AND companyNo = #{companyno}
+	</select>
+	<select id="countTable" parameterType="Map" resultType="Integer">
+		SELECT IFNULL(COUNT(*),0) FROM ${tablename}
+		WHERE companyNo = #{companyno}
+		<if test="tablename eq 'Post'">
+		AND enddate &gt; NOW()
+		</if>
+	</select>
+	<select id="getUserFollow" parameterType="Map" resultType="Integer">
+		SELECT IFNULL(COUNT(*),0) FROM SavedCompany
+		WHERE companyNo = #{companyno} AND memberNo = #{memberno}
+	</select>
+	<delete id="unfollow" parameterType="Map">
+		DELETE FROM SavedCompany
+		WHERE companyNo = #{companyno} AND memberNo = #{memberno} 
+	</delete>
+	<insert id="follow" parameterType="Map">
+		INSERT INTO SavedCompany(companyNo, memberNo)
+		VALUES(#{companyno},#{memberno})
+	</insert>
+	<select id="getTableJobcateLst" parameterType="Map" resultType="com.open.job.DTO.Jobcategory">
+		SELECT jobcategory FROM ${tablename}
+		WHERE companyNo = #{companyno}
+		GROUP BY jobcategory
+	</select>
+	<select id="getPostSubjobcategory" parameterType="Map" resultType="com.open.job.DTO.Jobcategory">
+		SELECT subjobcategory FROM Post
+		WHERE companyNo = #{companyno} AND jobcategory = #{jobcategory}
+		GROUP BY subjobcategory
+	</select>
+	<select id="getReviewStatusLst" parameterType="Integer" resultType="com.open.job.DTO.CompanyReview">
+		SELECT employstatus FROM (SELECT IF(employstatus = 'true','true','false') as employstatus FROM CompanyReviewInfo
+		WHERE companyNo = #{companyno}) A
+		GROUP BY employstatus
+	</select>
+	<select id="getInterviewPositionLst" parameterType="Integer" resultType="com.open.job.DTO.InterviewReview">
+		SELECT position FROM InterviewReviewInfo
+		WHERE companyNo = #{companyno}
+		GROUP BY position
+	</select>
+		<select id="getInterviewSuccessLst" parameterType="Integer" resultType="com.open.job.DTO.InterviewReview">
+		SELECT successed FROM InterviewReview
+		INNER JOIN InterviewReviewInfo USING(interviewNo)
+		WHERE companyNo = #{companyno}
+		GROUP BY successed
+	</select>
+	<select id="getReviewStat" parameterType="Integer" resultType="com.open.job.DTO.CompanyReview">
+		SELECT
+		Round(AVG(totalScore)*10,0) AS totalScore,
+		Round(AVG(promotionScore)*10,0) AS promotionScore,
+		Round(AVG(walfareScore)*10,0) AS walfareScore,
+		Round(AVG(balanceScore)*10,0) AS balanceScore,
+		Round(AVG(atmosphereScore)*10,0) AS atmosphereScore,
+		Round(AVG(executiveScore)*10,0) AS executiveScore,
+		ROUND(COUNT(IF(recommandScore='Y',1,null))/COUNT(*)*100,0) recommandScore,
+		ROUND(COUNT(IF(futureScore='U',1,null))/COUNT(*)*100,0) futureScore,
+		ROUND(COUNT(IF(CEOScore='Y',1,null))/COUNT(*)*100,0) CEOScore 
+		FROM CompanyReview 
+		INNER JOIN CompanyReviewInfo USING(companyreviewNo)
+		WHERE Companyno = #{companyno}	
+	</select>
+	<select id="getInterviewStat" parameterType="Integer" resultType="com.open.job.DTO.InterviewReview">
+		SELECT
+		Round(AVG(interviewlevel)*10,0) AS interviewlevel,
+		CONCAT(ROUND(COUNT(IF(experience='P',1,null))/COUNT(*)*100,0),',',
+				ROUND(COUNT(IF(experience='N',1,null))/COUNT(*)*100,0),',',
+				ROUND(COUNT(IF(experience='S',1,null))/COUNT(*)*100,0)) AS experience,
+		CONCAT(ROUND(COUNT(IF(successed='Y',1,null))/COUNT(*)*100,0),',',
+				ROUND(COUNT(IF(successed='N',1,null))/COUNT(*)*100,0),',',
+				ROUND(COUNT(IF(successed='W',1,null))/COUNT(*)*100,0)) AS successed,
+		CONCAT(ROUND(COUNT(IF(interviewroot='온라인지원',1,null))/COUNT(*)*100,0),',',
+				ROUND(COUNT(IF(interviewroot='직원추천',1,null))/COUNT(*)*100,0),',',
+				ROUND(COUNT(IF(interviewroot='공개채용',1,null))/COUNT(*)*100,0),',',
+				ROUND(COUNT(IF(interviewroot='해드헌터',1,null))/COUNT(*)*100,0),',',
+				ROUND(COUNT(IF(interviewroot='학교 취업지원 센터',1,null))/COUNT(*)*100,0),',',
+				ROUND(COUNT(IF(interviewroot='기타',1,null))/COUNT(*)*100,0)) AS interviewroot	
+		FROM InterviewReview 
+		INNER JOIN InterviewReviewInfo USING(interviewNo)
+		WHERE companyNo = #{companyno}
+	</select>
+	<select id="getReviewRank" parameterType="Map" resultType="com.open.job.DTO.Company">
+		SELECT
+		companyname, companyno,
+		IFNull(Round(AVG(${columnname})*10,0),0) AS address
+		FROM Company 
+		LEFT JOIN CompanyReviewInfo USING(companyno)
+		LEFT JOIN CompanyReview USING(companyreviewNo)
+		GROUP BY (companyno)
+		ORDER BY address DESC
+		LIMIT #{limit}
+	</select>
+	<select id="getAllPost" resultType="com.open.job.DTO.Post">
+		SELECT companyNo, postNo, thumbimg, title, location, jobcategory, subjobcategory, type, career, companyName, enddate FROM Post 
+		INNER JOIN Company USING (companyNo)
+		INNER JOIN CompanyInfo USING (companyNo)
+		INNER JOIN Companyimg USING (companyNo)
+		ORDER BY writedate DESC
+	</select>
+	<select id="getSavedPost" parameterType="Map" resultType="Integer">
+		SELECT IFNULL(COUNT(*),0) FROM SavedPost
+		WHERE postno = #{postno} AND memberno = #{memberno}
+	</select>
+	<insert id="savePost">
+		INSERT INTO SavedPost(postNo,memberNo)
+		VALUES(#{postno},#{memberno}) 
+	</insert>
+	<delete id="unsavePost">
+		DELETE FROM SavedPost
+		WHERE postNo = #{postno} AND memberno=#{memberno}
+	</delete>
+</mapper>
